@@ -68,6 +68,30 @@ namespace StudentExerciseMVC.Controllers
         // GET: Cohorts/Edit/5
         public ActionResult Edit(int id)
         {
+            //try
+            //{
+            //    using(SqlConnection conn = Connection)
+            //    {
+            //        // opn the connection 
+            //        conn.Open();
+            //        using(SqlCommand cmd = conn.CreateCommand())
+            //        {
+            //            // run the query to UPDATE
+            //            cmd.CommandText = $@"UPDATE Cohort
+            //                                 SET CohortName = @cohortname
+            //                                 WHERE Id = @id;";
+
+            //            // add the parameters
+            //            cmd.Parameters.Add(new SqlParameter("@id", id));
+            //            //cmd.Parameters.Add(new SqlParameter("@cohortName", c));
+
+            //        }
+            //    }
+            //}
+            //catch
+            //{
+
+            //}
             return View();
         }
 
