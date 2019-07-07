@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using StudentExerciseMVC.Models;
 
 namespace StudentExerciseMVC.Controllers
 {
@@ -17,11 +19,20 @@ namespace StudentExerciseMVC.Controllers
             _config = config;
         }
 
+        public SqlConnection Connection
+        {
+            get
+            {
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            }
+        }
 
         // GET: Cohorts
         public ActionResult Index()
         {
-            return View();
+            List<Cohort> cohorts = GetAllCohorts();
+            //ViewData["cohorts"] = cohorts;
+            return View(cohorts);
         }
 
         // GET: Cohorts/Details/5
@@ -96,6 +107,46 @@ namespace StudentExerciseMVC.Controllers
             catch
             {
                 return View();
+            }
+        }
+
+
+        private List<Cohort> GetAllCohorts()
+        {
+            // step 1 open the connection
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using(SqlCommand cmd = conn.CreateCommand())
+                {
+                    // step 2. create the query
+                    cmd.CommandText = @"SELECT Id,
+                                                CohortName
+                                        FROM Cohort;";
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    // create a collection to keep the list of cohorts
+                    List<Cohort> cohorts = new List<Cohort>();
+
+                    // run the query and hold the results in an object
+                    while (reader.Read())
+                    {
+                        Cohort cohort = new Cohort
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            CohortName = reader.GetString(reader.GetOrdinal("CohortName"))
+                        };
+
+                        //add to the list of cohorts 
+                        cohorts.Add(cohort);
+                    }
+
+                    //close the connection and return the list of cohorts
+                    reader.Close();
+                    return cohorts;
+
+                }
             }
         }
     }

@@ -9,5 +9,8 @@ namespace StudentExerciseMVC.Models
     {
         public int Id { get; set; }
         public string CohortName { get; set; }
+
+        List<Student> StudentInCohort = new List<Student>();
+        // need the list of instructors as well
     }
 }
