@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,9 +8,23 @@ namespace StudentExerciseMVC.Models.ViewModels
 {
     public class CohortEditViewModel
     {
-        public int Id { get; set; }
-        public string CohortName { get; set; }
+        public Cohort Cohort { get; set; }
 
-        List<Student> StudentInCohort = new List<Student>();
+        List<Student> StudentsInCohort { get; set; }
+
+        List<SelectListItem> AvailableStudents
+        {
+            get
+            {
+                if(StudentsInCohort == null)
+                {
+                    return null;
+                }
+                return StudentsInCohort
+                    .Select(s => new SelectListItem())
+                    .ToList();
+
+            }
+        }
     }
 }

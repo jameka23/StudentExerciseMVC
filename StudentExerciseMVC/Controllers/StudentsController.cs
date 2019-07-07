@@ -120,19 +120,35 @@ namespace StudentExerciseMVC.Controllers
         // GET: Students/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            Student student = GetStudentById(id);
+            return View(student);
         }
 
         // POST: Students/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult DeleteConfirmed(int id, IFormCollection collection)
         {
             try
             {
                 // TODO: Add delete logic here
+                using(SqlConnection conn = Connection)
+                {
+                    // open the connection
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        // run the query
+                        cmd.CommandText = $@"DELETE FROM StudentExercise WHERE StudentId = @id;
+                                             DELETE FROM Student WHERE Id = @id;";
 
-                return RedirectToAction(nameof(Index));
+                        // parameters
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
