@@ -37,7 +37,8 @@ namespace StudentExerciseMVC.Controllers
         // GET: Students/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            Student student = GetStudentById(id);
+            return View(student);
         }
 
         // GET: Students/Create
@@ -156,6 +157,48 @@ namespace StudentExerciseMVC.Controllers
                     return students;
                 }
             }
+        }
+
+        private Student GetStudentById(int id)
+        {
+
+            using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        // create and run the query
+                        cmd.CommandText = $@"SELECT Id,
+                                                    FirstName,
+                                                    LastName,
+                                                    Slack,
+                                                    CohortId
+                                            FROM Student
+                                            WHERE Id = @id;";
+
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        SqlDataReader reader = cmd.ExecuteReader();
+
+                        Student student = null;
+                        while (reader.Read())
+                        {
+                            student = new Student
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                Slack = reader.GetString(reader.GetOrdinal("Slack")),
+                                CohortId = reader.GetInt32(reader.GetOrdinal("CohortId"))
+                            };
+                        }
+
+                        // close the connection and return the student
+                        reader.Close();
+                        return student;
+                    }
+                }
+
         }
     }
 }

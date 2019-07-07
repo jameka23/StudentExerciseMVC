@@ -38,7 +38,8 @@ namespace StudentExerciseMVC.Controllers
         // GET: Cohorts/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            Cohort cohort = GetCohortById(id);
+            return View(cohort);
         }
 
         // GET: Cohorts/Create
@@ -146,6 +147,40 @@ namespace StudentExerciseMVC.Controllers
                     reader.Close();
                     return cohorts;
 
+                }
+            }
+        }
+
+        private Cohort GetCohortById(int id)
+        {
+            using(SqlConnection conn = Connection)
+            {
+                // open the connection 
+                conn.Open();
+                using(SqlCommand cmd = conn.CreateCommand())
+                {
+                    // create the query for one cohort
+                    // sqlparameter
+                    cmd.CommandText = $@"SELECT Id,
+                                                CohortName
+                                         FROM Cohort
+                                         WHERE Id = @id;";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    Cohort cohort = null;
+                    while (reader.Read())
+                    {
+                        cohort = new Cohort
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            CohortName = reader.GetString(reader.GetOrdinal("CohortName"))
+                        };
+                    }
+                    // close the connection and return the single cohort
+                    reader.Close();
+                    return cohort;
                 }
             }
         }
