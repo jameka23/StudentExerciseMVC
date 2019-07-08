@@ -45,19 +45,37 @@ namespace StudentExerciseMVC.Controllers
         // GET: Instructors/Create
         public ActionResult Create()
         {
-            return View();
+            InstructorCreateViewModel viewModel = new InstructorCreateViewModel();
+            return View(viewModel);
         }
 
         // POST: Instructors/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(InstructorCreateViewModel viewModel)
         {
             try
             {
                 // TODO: Add insert logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"INSERT INTO Instructor(FirstName, LastName, Slack, Specialty, CohortId) 
+                                            VALUES(@firstname, @lastname, @slack, @specialty, @cohortId);";
 
-                return RedirectToAction(nameof(Index));
+                        cmd.Parameters.Add(new SqlParameter("@firstname", viewModel.Instructor.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastname", viewModel.Instructor.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@slack", viewModel.Instructor.Slack));
+                        cmd.Parameters.Add(new SqlParameter("@specialty", viewModel.Instructor.Specialty));
+                        cmd.Parameters.Add(new SqlParameter("@cohortId", viewModel.Instructor.CohortId));
+
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+
+                    }
+                }
             }
             catch
             {
@@ -119,19 +137,30 @@ namespace StudentExerciseMVC.Controllers
         // GET: Instructors/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            Instructor instructor = GetInstructorById(id);
+            return View(instructor);
         }
 
         // POST: Instructors/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id, bool nothing)
         {
             try
             {
                 // TODO: Add delete logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"DELETE FROM Instructor WHERE Id = @id;";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
 
-                return RedirectToAction(nameof(Index));
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
