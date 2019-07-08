@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using StudentExerciseMVC.Models;
+using StudentExerciseMVC.Models.ViewModels;
 
 namespace StudentExerciseMVC.Controllers
 {
@@ -65,19 +66,39 @@ namespace StudentExerciseMVC.Controllers
         // GET: Exercises/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            Exercise exercise = GetExerciseById(id);
+            ExerciseEditViewModel viewModel = new ExerciseEditViewModel();
+            viewModel.Exercise = exercise;
+            return View(viewModel);
         }
 
         // POST: Exercises/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, ExerciseEditViewModel viewModel)
         {
+            Exercise exercise = viewModel.Exercise;
             try
             {
                 // TODO: Add update logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"UPDATE Exercise
+                                            SET ExerciseName = @exercisename,
+                                                ExerciseLanguage = @exerciselanguage
+                                            WHERE Id = @id;";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@exercisename", exercise.ExerciseName));
+                        cmd.Parameters.Add(new SqlParameter("@exerciselanguage", exercise.ExerciseLanguage));
 
-                return RedirectToAction(nameof(Index));
+                        cmd.ExecuteNonQuery();
+
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
@@ -88,19 +109,31 @@ namespace StudentExerciseMVC.Controllers
         // GET: Exercises/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            Exercise exercise = GetExerciseById(id);
+            return View(exercise);
         }
 
         // POST: Exercises/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult DeleteConfirmed(int id, bool nothing)
         {
             try
             {
                 // TODO: Add delete logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"DELETE FROM StudentExercise WHERE ExerciseId = @id;
+                                            DELETE FROM Exercise WHERE Id = @id;";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
 
-                return RedirectToAction(nameof(Index));
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
