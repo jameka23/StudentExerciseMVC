@@ -18,6 +18,6 @@ namespace StudentExerciseMVC.Models
         public int CohortId { get; set; }
         public Cohort Cohort { get; set; }
 
-        List<Exercise> StudentExercises { get; set;}
+        public List<Exercise> StudentExercises { get; set;}
     }
 }

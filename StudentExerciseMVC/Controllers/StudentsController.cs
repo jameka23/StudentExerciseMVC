@@ -87,9 +87,11 @@ namespace StudentExerciseMVC.Controllers
         {
             Student student = GetStudentById(id);
             List<Cohort> cohorts = GetAllCohorts();
+            List<Exercise> exercises = GetAllExercises();
             StudentEditViewModel viewModel = new StudentEditViewModel();
             viewModel.Student = student;
             viewModel.AvailableCohorts = cohorts;
+            viewModel.Exercises = exercises;
 
             return View(viewModel);
         }
@@ -300,6 +302,35 @@ namespace StudentExerciseMVC.Controllers
                     reader.Close();
                     return cohorts;
 
+                }
+            }
+        }
+        private List<Exercise> GetAllExercises()
+        {
+            using(SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using(SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = $@"SELECT Id, ExerciseName, ExerciseLanguage 
+                                            FROM Exercise;";
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    List<Exercise> exercises = new List<Exercise>();
+
+                    while (reader.Read())
+                    {
+                        Exercise exercise = new Exercise
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            ExerciseName = reader.GetString(reader.GetOrdinal("ExerciseName")),
+                            ExerciseLanguage = reader.GetString(reader.GetOrdinal("ExerciseLanguage"))
+                        };
+                        exercises.Add(exercise);
+                    }
+
+                    reader.Close();
+                    return exercises;
                 }
             }
         }

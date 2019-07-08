@@ -10,6 +10,20 @@ namespace StudentExerciseMVC.Models.ViewModels
     {
         public Student Student { get; set; }
         public List<Cohort> AvailableCohorts { get; set; }
+        public List<Exercise> Exercises { get; set; }
+        public List<SelectListItem> AvailableExercisesMultiList
+        {
+            get
+            {
+                if(Exercises == null)
+                {
+                    return null;
+                }
+                return Exercises
+                        .Select(e => new SelectListItem(e.ExerciseName, e.Id.ToString()))
+                        .ToList();
+            }
+        }
         public List<SelectListItem> AvailableCohortsSelectList
         {
             get
