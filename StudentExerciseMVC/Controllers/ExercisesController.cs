@@ -1,24 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using StudentExerciseMVC.Models;
 
 namespace StudentExerciseMVC.Controllers
 {
     public class ExercisesController : Controller
     {
+        private readonly IConfiguration _config;
+
+        public ExercisesController(IConfiguration config)
+        {
+            _config = config;
+        }
+        public SqlConnection Connection
+        {
+            get
+            {
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            }
+        }
         // GET: Exercises
         public ActionResult Index()
         {
-            return View();
+            List<Exercise> exercises = GetAllExercises();
+            return View(exercises);
         }
 
         // GET: Exercises/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            Exercise exercise = GetExerciseById(id);
+            return View(exercise);
         }
 
         // GET: Exercises/Create
@@ -87,6 +105,71 @@ namespace StudentExerciseMVC.Controllers
             catch
             {
                 return View();
+            }
+        }
+
+        private List<Exercise> GetAllExercises()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = $@"SELECT Id,
+                                                ExerciseName,
+                                                ExerciseLanguage
+                                        FROM Exercise;";
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    List<Exercise> exercises = new List<Exercise>();
+
+                    while (reader.Read())
+                    {
+                        Exercise exercise = new Exercise
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            ExerciseName = reader.GetString(reader.GetOrdinal("ExerciseName")),
+                            ExerciseLanguage = reader.GetString(reader.GetOrdinal("ExerciseLanguage"))
+                        };
+
+                        exercises.Add(exercise);
+                    }
+
+                    reader.Close();
+                    return exercises;
+                }
+            }
+        }
+        private Exercise GetExerciseById(int id)
+        {
+            using(SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using(SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = $@"SELECT Id,
+                                                ExerciseName,
+                                                ExerciseLanguage
+                                        FROM Exercise
+                                        WHERE Id = @id;";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    Exercise exercise = null;
+                    while (reader.Read())
+                    {
+                        exercise = new Exercise
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            ExerciseName = reader.GetString(reader.GetOrdinal("ExerciseName")),
+                            ExerciseLanguage = reader.GetString(reader.GetOrdinal("ExerciseLanguage"))
+                        };
+                    }
+                    reader.Close();
+                    return exercise;
+                }
             }
         }
     }
