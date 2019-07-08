@@ -43,19 +43,32 @@ namespace StudentExerciseMVC.Controllers
         // GET: Exercises/Create
         public ActionResult Create()
         {
-            return View();
+            ExerciseCreateViewModel viewModel = new ExerciseCreateViewModel();
+            return View(viewModel);
         }
 
         // POST: Exercises/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(ExerciseCreateViewModel viewModel)
         {
             try
             {
                 // TODO: Add insert logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"INSERT INTO Exercise(ExerciseName, ExerciseLanguage)
+                                            VALUES(@exname, @exlanguage);";
+                        cmd.Parameters.Add(new SqlParameter("@exname", viewModel.Exercise.ExerciseName));
+                        cmd.Parameters.Add(new SqlParameter("@exlanguage", viewModel.Exercise.ExerciseLanguage));
 
-                return RedirectToAction(nameof(Index));
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
