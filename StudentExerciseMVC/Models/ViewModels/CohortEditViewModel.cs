@@ -10,9 +10,9 @@ namespace StudentExerciseMVC.Models.ViewModels
     {
         public Cohort Cohort { get; set; }
 
-        List<Student> StudentsInCohort { get; set; }
+        //List<Student> StudentsInCohort { get; set; }
 
-        List<SelectListItem> AvailableStudents
+        /*List<SelectListItem> AvailableStudents
         {
             get
             {
@@ -25,6 +25,6 @@ namespace StudentExerciseMVC.Models.ViewModels
                     .ToList();
 
             }
-        }
+        }*/
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using StudentExerciseMVC.Models;
+using StudentExerciseMVC.Models.ViewModels;
 
 namespace StudentExerciseMVC.Controllers
 {
@@ -68,43 +69,39 @@ namespace StudentExerciseMVC.Controllers
         // GET: Cohorts/Edit/5
         public ActionResult Edit(int id)
         {
-            //try
-            //{
-            //    using(SqlConnection conn = Connection)
-            //    {
-            //        // opn the connection 
-            //        conn.Open();
-            //        using(SqlCommand cmd = conn.CreateCommand())
-            //        {
-            //            // run the query to UPDATE
-            //            cmd.CommandText = $@"UPDATE Cohort
-            //                                 SET CohortName = @cohortname
-            //                                 WHERE Id = @id;";
+            Cohort cohort = GetCohortById(id);
+            CohortEditViewModel viewModel = new CohortEditViewModel();
+            viewModel.Cohort = cohort;
 
-            //            // add the parameters
-            //            cmd.Parameters.Add(new SqlParameter("@id", id));
-            //            //cmd.Parameters.Add(new SqlParameter("@cohortName", c));
-
-            //        }
-            //    }
-            //}
-            //catch
-            //{
-
-            //}
-            return View();
+            return View(viewModel);
         }
 
         // POST: Cohorts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, CohortEditViewModel viewModel)
         {
+            Cohort cohort = viewModel.Cohort;
             try
             {
                 // TODO: Add update logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"UPDATE Cohort
+                                            SET CohortName = @cohortname
+                                            WHERE Id = @id;";
 
-                return RedirectToAction(nameof(Index));
+                        // parameters
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@cohortname", cohort.CohortName));
+
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
