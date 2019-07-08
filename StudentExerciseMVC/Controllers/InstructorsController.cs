@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using StudentExerciseMVC.Models;
+using StudentExerciseMVC.Models.ViewModels;
 
 namespace StudentExerciseMVC.Controllers
 {
@@ -67,19 +68,47 @@ namespace StudentExerciseMVC.Controllers
         // GET: Instructors/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            Instructor instructor = GetInstructorById(id);
+            List<Cohort> cohorts = GetAllCohorts();
+            InstructorEditViewModel viewModel = new InstructorEditViewModel();
+            viewModel.AvailableCohorts = cohorts;
+            viewModel.Instructor = instructor;
+
+            return View(viewModel);
         }
 
         // POST: Instructors/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, InstructorEditViewModel viewModel)
         {
+            Instructor instructor = viewModel.Instructor;
             try
             {
                 // TODO: Add update logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"UPDATE Instructor
+                                            SET FirstName = @firstname,
+                                                LastName = @lastname,
+                                                Slack = @slack,
+                                                Specialty = @specialty,
+                                                CohortId = @cohortId
+                                            WHERE Id = @id;";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@firstname", instructor.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastname", instructor.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@slack", instructor.Slack));
+                        cmd.Parameters.Add(new SqlParameter("@specialty", instructor.Specialty));
+                        cmd.Parameters.Add(new SqlParameter("@cohortId", instructor.CohortId));
 
-                return RedirectToAction(nameof(Index));
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
@@ -122,7 +151,7 @@ namespace StudentExerciseMVC.Controllers
                                                     LastName,
                                                     Slack,
                                                     CohortId,
-                                                    Speciality
+                                                    Specialty
                                             FROM Instructor
                                             WHERE Id = @id;";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
