@@ -46,19 +46,30 @@ namespace StudentExerciseMVC.Controllers
         // GET: Cohorts/Create
         public ActionResult Create()
         {
-            return View();
+            CohortCreateViewModel viewModel = new CohortCreateViewModel();
+            return View(viewModel);
         }
 
         // POST: Cohorts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(CohortCreateViewModel viewModel)
         {
             try
             {
                 // TODO: Add insert logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = $@"INSERT INTO Cohort(CohortName) VALUES(@cohortname);";
 
-                return RedirectToAction(nameof(Index));
+                        cmd.Parameters.Add(new SqlParameter("@cohortname", viewModel.Cohort.CohortName));
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
@@ -112,19 +123,34 @@ namespace StudentExerciseMVC.Controllers
         // GET: Cohorts/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            Cohort cohort = GetCohortById(id);
+            return View(cohort);
         }
 
         // POST: Cohorts/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("DELETE")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult DeleteConfirmed(int id, bool nothing)
         {
             try
             {
                 // TODO: Add delete logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        // will need later
+                        /*DELETE FROM Student WHERE CohortId = @id;
+                                             DELETE FROM Instructor WHERE CohortId = @id;*/
+                        cmd.CommandText = $@"DELETE FROM Cohort WHERE Id = @id;";
 
-                return RedirectToAction(nameof(Index));
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        cmd.ExecuteNonQuery();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
             catch
             {
